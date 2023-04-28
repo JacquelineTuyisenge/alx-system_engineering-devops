@@ -1,5 +1,17 @@
 #!/usr/bin/env/ bash
-# bash script that displays the PID, along with the process name
-# of whose name contain the word 'bash'
-
-pgrep -l bash
+# bash script that displays that displays the PID, along with the process name, of processes whose name contain the word bash.
+# get the current script's PID
+script_pid=$$
+# loop through all running processes and filter those whose name contains "bash"
+while read -r pid name; do
+    if [[ $name == *bash* ]]; then
+        echo "$pid $name"
+    fi
+done < <(ls -d /proc/*/ -maxdepth 0 2>/dev/null | grep -Eo '[0-9]+ ' | while read -r pid; do
+    # skip the current script's PID
+    if [[ $pid != $script_pid ]]; then
+        # get the process name from the command line file
+        name=$(tr '\0' ' ' < "/proc/$pid/cmdline")
+        echo "$pid $name"
+    fi
+done)
