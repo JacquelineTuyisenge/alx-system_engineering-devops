@@ -3,12 +3,40 @@
 #   - Nginx should be listening on port 80
 #   - Return page containing "Holberton School" when queried
 
-apt-get update
-apt-get install -y nginx
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
 
-sed -i 's/listen\s*80/listen 0.0.0.0:80/' /etc/nginx/sites-available/default
+# Install Nginx
+apt update
+apt install -y nginx
 
-service nginx start
+# Configure Nginx
+cat <<EOF > /etc/nginx/sites-available/default
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
+    root /var/www/html;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        echo "Hello World!";
+    }
+}
+EOF
+
+# Start Nginx service
+systemctl start nginx
+
+# Enable Nginx service to start on boot
+systemctl enable nginx
+
+# Create index.html file
 echo "Hello World!" > /var/www/html/index.html
-echo "Hello World!" > /etc/nginx/html/index.html
+
+# Restart Nginx
+systemctl restart nginx
