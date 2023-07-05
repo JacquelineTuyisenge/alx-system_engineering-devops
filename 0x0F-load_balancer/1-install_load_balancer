@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# bash script that installs HAProxy & makes configurations to meet the following requirements:
+#   - Distribute requests using a roundrobin algorithm
+#   - Make sure that HAproxy can be managed via an init script
+#   - Make sure that your servers are configured with the right hostnames: [STUDENT_ID]-web-01, [STUDENT_ID]-web-02
+
+apt-get -y install software-properties-common
+add-apt-repository ppa:vbernat/haproxy-1.8
+apt-get update
+apt-get -y install haproxy
+echo "ENABLED=1" >> /etc/default/haproxy
+printf %s "listen 97299-webs
+    bind *:80
+    mode http
+    balance roundrobin
+    server 97299-web-01 54.174.230.101:80 check
+    server 97299-web-02 100.26.57.164:80 check
+" >> /etc/haproxy/haproxy.cfg
+sudo service haproxy restart
